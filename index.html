@@ -181,7 +181,6 @@
     async function init() {
         alert('Loading model...')
 
-        let t1 = Date.now()
         const recognizer = await createModel();
 
         alert('Model Loaded!')
@@ -193,6 +192,7 @@
         const pausedResult = document.getElementById("paused-result");
         const pausedTimerResult = document.getElementById("paused-timer-result");
 
+        let t1 = Date.now()
         recognizer.listen(result => {
             const scores = result.scores; // probability of prediction for each class
 
