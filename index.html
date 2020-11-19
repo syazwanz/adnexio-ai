@@ -201,20 +201,23 @@
             chartOneText.innerHTML = `${scores[0].toFixed(2)}`;
             chartTwoText.innerHTML = `${scores[1].toFixed(2)}`;
 
-            if (scores[0] > 0.10) { //parameter for background noise
-                //do nothing
-                // console.log()
-                pausedTimerResult.innerHTML = ((Date.now() - t1) / 1000).toFixed(2);
 
+            //////////////////////////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////////////
+            // TO OPTIMIZE THIS FUNCTION / LOGIC
+            if (scores[0] > 0.10) { //parameter for background noise
+                pausedTimerResult.innerHTML = ((Date.now() - t1) / 1000).toFixed(2); //this is only for the UI
             }
             else {
                 t2 = Date.now()
                 pauseTime = ((t2 - t1) / 1000).toFixed(2)
                 if (pauseTime > 1) {
-                    pausedResult.innerHTML = pauseTime;
+                    pausedResult.innerHTML = pauseTime; //this is only for the UI
                 }
                 t1 = Date.now()
             }
+            //////////////////////////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////////////
 
 
         }, {
