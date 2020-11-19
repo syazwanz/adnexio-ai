@@ -4,27 +4,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <title>Adnexio</title>
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: rgb(201, 201, 201);
+            font-family: 'Quicksand', sans-serif;
+        }
+
         #container {
-            background-color: antiquewhite;
-            width: 100vw;
-            height: 100vh;
+            background-color: rgb(247, 245, 239);
+            width: 500px;
+            height: 420px;
+            margin: 0 auto;
+            margin-top: 40px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+
+            position: relative;
+        }
+
+        #title {
+            margin: -20px 0px 20px 0px;
+        }
+
+        button {
+            padding: 5px 10px;
+            font-family: 'Quicksand', sans-serif;
+            margin: 15px 5px;
+        }
+
+        #chart {
+            height: 240px;
+            width: 70%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            color: black;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        #chart1 {
+            width: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
+
+        #chart2 {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+        #chart1-img {
+            width: 30px;
+            height: 200px;
+            background: #c31432;
+            background: -webkit-linear-gradient(to top, #240b36, #c31432);
+            background: linear-gradient(to top, #240b36, #c31432);
+            transition: all 0.4s;
+            margin: 10px 0px;
+        }
+
+        #chart2-img {
+            width: 30px;
+            height: 200px;
+            background: #c31432;
+            background: -webkit-linear-gradient(to top, #240b36, #c31432);
+            background: linear-gradient(to top, #240b36, #c31432);
+            transition: all 0.4s;
+            margin: 10px 0px;
+
+
+        }
+
+        #output-text {
+            width: 500px;
+            margin: 10px auto;
+            background-color: rgb(255, 252, 248);
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #paused-timer {
+            position: absolute;
+            top: 0px;
+            left: 510px;
+            padding: 10px;
+            background-color: rgb(255, 252, 248);
+            border-radius: 3px;
+            width: 130px;
+        }
     </style>
+
 </head>
 
 <body>
     <div id="container">
-        <div>Teachable Machine Audio Model</div>
-        <button type="button" onclick="init()">Start</button>
+        <div id="title">Adnexio Video Pause Prototype</div>
+        <div id="btn-container">
+            <button id="start-btn" type="button" onclick="init()">Start</button>
+            <button type="button" onclick="stop()">Stop</button>
+        </div>
         <div id="label-container"></div>
+        <div id="chart">
+            <div id="chart1">
+                <div id="chart1-img"></div>
+                <div>Background Noise</div>
+                <div id="chart1-text">0.00</div>
+            </div>
+            <div id="chart2">
+                <div id="chart2-img"></div>
+                <div>Speech </div>
+                <div id="chart2-text">0.00</div>
+            </div>
+        </div>
+        <div id="paused-timer">Pause Timer:<br /><span id="paused-timer-result">0.00</span> seconds</div>
     </div>
+    <div id="output-text">You paused for <span id="paused-result">0</span> seconds</div>
 </body>
 
 </html>
@@ -35,61 +154,66 @@
     src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
 
 <script type="text/javascript">
-    // more documentation available at
     // https://github.com/tensorflow/tfjs-models/tree/master/speech-commands
 
-    // the link to your model provided by Teachable Machine export panel
-    const URL = "http://127.0.0.1:5500/my_model/";
-    // const URL = "https://syazwancode.github.io/adnexio-ai/my_model/";
+    // const URL = "http://127.0.0.1:5500/my_model/"; //load model from localhost
+    const URL = "https://syazwancode.github.io/adnexio-ai/my_model/"; //load model from github server
+
+    let recognizer;
 
     async function createModel() {
         const checkpointURL = URL + "model.json"; // model topology
         const metadataURL = URL + "metadata.json"; // model metadata
 
-        const recognizer = speechCommands.create(
-            "BROWSER_FFT", // fourier transform type, not useful to change
-            undefined, // speech commands vocabulary feature, not useful for your models
+        recognizer = speechCommands.create(
+            "BROWSER_FFT",
+            undefined,
             checkpointURL,
             metadataURL);
 
-        // check that model and metadata are loaded via HTTPS requests.
         await recognizer.ensureModelLoaded();
 
         return recognizer;
     }
 
-    let pause = 1;
+
 
     async function init() {
-        const recognizer = await createModel();
-        const classLabels = recognizer.wordLabels(); // get class labels
-        const labelContainer = document.getElementById("label-container");
-        for (let i = 0; i < classLabels.length; i++) {
-            labelContainer.appendChild(document.createElement("div"));
-        }
+        alert('Loading model...')
 
-        // listen() takes two arguments:
-        // 1. A callback function that is invoked anytime a word is recognized.
-        // 2. A configuration object with adjustable fields
+        let t1 = Date.now()
+        const recognizer = await createModel();
+
+        alert('Model Loaded!')
+        const labelContainer = document.getElementById("label-container");
+        const chartOne = document.getElementById("chart1-img");
+        const chartTwo = document.getElementById("chart2-img");
+        const chartOneText = document.getElementById("chart1-text");
+        const chartTwoText = document.getElementById("chart2-text");
+        const pausedResult = document.getElementById("paused-result");
+        const pausedTimerResult = document.getElementById("paused-timer-result");
+
         recognizer.listen(result => {
             const scores = result.scores; // probability of prediction for each class
 
-            // render the probability scores per class
-            for (let i = 0; i < classLabels.length; i++) {
-                const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
-                labelContainer.childNodes[i].innerHTML = classPrediction;
+            chartOne.style.height = `${(scores[0] * 200)}px`;
+            chartTwo.style.height = `${(scores[1] * 200)}px`;
+            chartOneText.innerHTML = `${scores[0].toFixed(2)}`;
+            chartTwoText.innerHTML = `${scores[1].toFixed(2)}`;
+
+            if (scores[0] > 0.10) { //parameter for background noise
+                //do nothing
+                // console.log()
+                pausedTimerResult.innerHTML = ((Date.now() - t1) / 1000).toFixed(2);
+
             }
-
-
-            if (scores[0] > 0.5 && scores[1] < 0.2) {
-                pause++
-                console.log(pause)
-            } else {
-                console.log('max pause: ', pause)
-                if (pause > 10) {
-                    alert(`You paused for ${pause} ms`)
+            else {
+                t2 = Date.now()
+                pauseTime = ((t2 - t1) / 1000).toFixed(2)
+                if (pauseTime > 1) {
+                    pausedResult.innerHTML = pauseTime;
                 }
-                pause = 1
+                t1 = Date.now()
             }
 
 
@@ -97,10 +221,15 @@
             includeSpectrogram: true, // in case listen should return result.spectrogram
             probabilityThreshold: 0.75,
             invokeCallbackOnNoiseAndUnknown: true,
-            overlapFactor: 0.9 // probably want between 0.5 and 0.75. More info in README
+            overlapFactor: 0.85 // probably want between 0.5 and 0.75. More info in README
         });
 
-        // Stop the recognition in 5 seconds.
-        // setTimeout(() => recognizer.stopListening(), 5000);
+    }
+
+    function stop() {
+        if (recognizer !== undefined) {
+            console.log("hey stop")
+            recognizer.stopListening()
+        }
     }
 </script>
