@@ -217,6 +217,7 @@
             answerLongPause = `That's interesting. Anything else you would like to share?`
             answerShortPause = `OK`
             answerNoPause = ``
+            answerReset = ``
             //////////////////////////////////////////////////////////////////////////////////
             //////////////////////////////////////////////////////////////////////////////////
             // TO OPTIMIZE THIS FUNCTION / LOGIC
@@ -229,21 +230,33 @@
 
             let randomInt = getRandomInt(1, 10)
 
+            //if not talking
             if (scores[0] > 0.50) { //parameter for background noise
                 pausedTimerResult.innerHTML = ((Date.now() - t1) / 1000).toFixed(2); //this is only for the UI
+                if (((Date.now() - t1) / 1000).toFixed(2) < 1) {
+                    outputPauseAnswer.innerHTML = answerReset;
+                }
+                if (((Date.now() - t1) / 1000).toFixed(2) >= 1) {
+                    outputPauseAnswer.innerHTML = answerLongPause;
+                }
+                if (((Date.now() - t1) / 1000).toFixed(2) > 4) {
+                    outputPauseAnswer.innerHTML = answerNoPause;
+                }
             }
+
+            //if talking
             else {
                 t2 = Date.now()
                 pauseTime = ((t2 - t1) / 1000).toFixed(2)
-                if (pauseTime > 1) {
-                    outputPauseAnswer.innerHTML = answerLongPause;
-                    pausedResult.innerHTML = pauseTime; //this is only for the UI
-                } else if (pauseTime > 0.5 && pauseTime < 1) {
+                pausedResult.innerHTML = pauseTime; //this is only for the UI
+
+                console.log('pause time', pauseTime)
+                console.log('random integer', randomInt)
+
+                if (pauseTime > 0.5 && pauseTime < 1) {
                     if (randomInt < 3) {
                         outputPauseAnswer.innerHTML = answerShortPause;
                     }
-                } else {
-                    outputPauseAnswer.innerHTML = answerNoPause;
                 }
                 t1 = Date.now()
             }
