@@ -108,6 +108,16 @@
             text-align: center;
         }
 
+        #output-pause-answer {
+            width: 500px;
+            margin: 10px auto;
+            background-color: rgb(255, 252, 248);
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            height: 40px;
+        }
+
         #paused-timer {
             position: absolute;
             top: 0px;
@@ -144,6 +154,7 @@
         <div id="paused-timer">Pause Timer:<br /><span id="paused-timer-result">0.00</span> seconds</div>
     </div>
     <div id="output-text">You paused for <span id="paused-result">0</span> seconds</div>
+    <div id="output-pause-answer"></div>
 </body>
 
 </html>
@@ -192,6 +203,8 @@
         const pausedResult = document.getElementById("paused-result");
         const pausedTimerResult = document.getElementById("paused-timer-result");
 
+        const outputPauseAnswer = document.getElementById("output-pause-answer");
+
         let t1 = Date.now()
         recognizer.listen(result => {
             const scores = result.scores; // probability of prediction for each class
@@ -201,18 +214,36 @@
             chartOneText.innerHTML = `${scores[0].toFixed(2)}`;
             chartTwoText.innerHTML = `${scores[1].toFixed(2)}`;
 
-
+            answerLongPause = `That's interesting. Anything else you would like to share?`
+            answerShortPause = `OK`
+            answerNoPause = ``
             //////////////////////////////////////////////////////////////////////////////////
             //////////////////////////////////////////////////////////////////////////////////
             // TO OPTIMIZE THIS FUNCTION / LOGIC
-            if (scores[0] > 0.10) { //parameter for background noise
+
+            function getRandomInt(min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            let randomInt = getRandomInt(1, 10)
+
+            if (scores[0] > 0.50) { //parameter for background noise
                 pausedTimerResult.innerHTML = ((Date.now() - t1) / 1000).toFixed(2); //this is only for the UI
             }
             else {
                 t2 = Date.now()
                 pauseTime = ((t2 - t1) / 1000).toFixed(2)
                 if (pauseTime > 1) {
+                    outputPauseAnswer.innerHTML = answerLongPause;
                     pausedResult.innerHTML = pauseTime; //this is only for the UI
+                } else if (pauseTime > 0.5 && pauseTime < 1) {
+                    if (randomInt < 3) {
+                        outputPauseAnswer.innerHTML = answerShortPause;
+                    }
+                } else {
+                    outputPauseAnswer.innerHTML = answerNoPause;
                 }
                 t1 = Date.now()
             }
